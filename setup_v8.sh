@@ -6,7 +6,6 @@ cd v8
 gclient sync
 sudo apt-get update
 ./build/install-build-deps.sh
-alias gm=`pwd`/tools/dev/gm.py
 git clone https://gn.googlesource.com/gn
 wget https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip
 unzip ninja-linux.zip
@@ -17,5 +16,5 @@ python build/gen.py
 sudo ninja -C out
 sudo cp out/gn /usr/local/bin/
 cd ../
-gm x64.release
+./tools/dev/gm.py x64.release
 cd ../

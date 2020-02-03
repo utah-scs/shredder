@@ -1,9 +1,8 @@
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 export PATH=$PATH:`pwd`/depot_tools
 gclient config https://github.com/utah-scs/v8.git
-fetch v8
-cd v8
 gclient sync
+cd v8
 sudo apt-get update
 ./build/install-build-deps.sh
 git clone https://gn.googlesource.com/gn

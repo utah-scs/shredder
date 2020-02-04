@@ -15,5 +15,6 @@ python build/gen.py
 sudo ninja -C out
 sudo cp out/gn /usr/local/bin/
 cd ../
-./tools/dev/gm.py x64.release
+gn gen x64.release --args='is_debug=false target_cpu="x64" v8_monolithic = true v8_use_external_startup_data = false use_custom_libcxx = false is_component_build = false'
+ninja -C x64.release v8_monolith
 cd ../

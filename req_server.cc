@@ -382,7 +382,7 @@ future<> req_service::js() {
 void db_get(const v8::FunctionCallbackInfo<v8::Value>& args) {
     db_val ret;
     db_val* ret_p = &ret;
-    uint32_t key = args[0]->Uint32Value();
+    uint32_t key = args[0]->Uint32Value(args.GetIsolate()->GetCurrentContext()).ToChecked();
 
     auto db = get_local_database();
     auto tid = local_req_server().get_tid_direct();
@@ -408,7 +408,7 @@ void db_set(const v8::FunctionCallbackInfo<v8::Value>& args) {
     db_val* val = (db_val*)malloc(sizeof(db_val));
     val->data = content.Data();
     val->length = content.ByteLength();
-    uint32_t key = args[0]->Uint32Value();
+    uint32_t key = args[0]->Uint32Value(args.GetIsolate()->GetCurrentContext()).ToChecked();
     val->key = key;
 
     auto tid = local_req_server().get_tid_direct();
@@ -431,7 +431,7 @@ void db_set(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void db_del(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    v8::String::Utf8Value str(args[0]);
+    v8::String::Utf8Value str(args.GetIsolate(), args[0]);
     const char* cstr = ToCString(str);
     sstring key = to_sstring(cstr);
     sstring& k = key;
@@ -451,30 +451,9 @@ void js_print(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate * isolate = args.GetIsolate();
     HandleScope handle_scope(isolate);
 
-    v8::String::Utf8Value str(args[0]);
+    v8::String::Utf8Value str(args.GetIsolate(), args[0]);
     const char* cstr = ToCString(str);
     std::cout << cstr << '\n';
-}
-
-// TO DO: obsolete code for btree version
-void init_iterator(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    Isolate * isolate = args.GetIsolate();
-    HandleScope handle_scope(isolate);
-    v8::String::Utf8Value str(args[0]);
-    const char* cstr = ToCString(str);
-    sstring key = to_sstring(cstr);
-    sstring& k = key;
-    redis_key rk{std::ref(k)};
-    db_val ret;
-    db_val* ret_p = &ret;
-
-    local_req_server().get_tid().then([&rk, &args, &ret_p](auto&& t) {
-        return get_local_database()->get_iterator(std::move(rk), std::move(t)).then([&args, &ret_p] (auto&& m) {
-              *ret_p = *m;
-        });
-    }).get();
-    Local<v8::ArrayBuffer> ab = v8::ArrayBuffer::New(args.GetIsolate(), ret_p->list, 16);
-    args.GetReturnValue().Set(ab);
 }
 
 void get_hash_table(const v8::FunctionCallbackInfo<v8::Value>& args) {

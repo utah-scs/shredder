@@ -125,7 +125,7 @@ function predict() {
 }
 
 // C++ binding version
-/*function get(key) {
+function get(key) {
   var k = key;
   for (var i = 0; i < 1; i++) {
     var p = DBGet(k%(nRows - 1));
@@ -134,11 +134,11 @@ function predict() {
   }
 //  return k;
     return p;
-}*/
+}
 
 var getBuf = new ArrayBuffer(recordSize);
 // CSA version
-function get(key) {
+/*function get(key) {
   var k = key;
 //  var p = HTGet(table, key%(nRows - 1), getBuf);
   for (var i = 0; i < 1; i++) {
@@ -150,7 +150,7 @@ function get(key) {
 //  return k;
   return getBuf;
 }
-
+*/
 var c= 0;
 /*function get_friend_list(key, depth) {
      var k = key;

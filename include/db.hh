@@ -1,7 +1,6 @@
 #pragma once
 #include "include/seastarkv.hh"
 #include "include/reply_builder.hh"
-#include "btree/btree.h"
 #include <cstdio>
 #include <fstream>
 #include <chrono>
@@ -25,8 +24,6 @@ struct db_val {
     void* list;
     uint32_t length;
 }__attribute__((__packed__));
-
-typedef btree::btree_map<sstring, db_val> MyMap;
 
 struct node
 {
@@ -167,9 +164,6 @@ db_val_t* ht_get(hashtable_t* ht, uint32_t key) {
     future<> stop();
     hashtable_t ht[NUM_CONTEXTS];
 private:
-    //Btree map, currently not used.
-    MyMap obj_map[NUM_CONTEXTS];
-    MyMap::const_iterator it[NUM_CONTEXTS];
     node *head[NUM_CONTEXTS];
 
     ts first_dump;

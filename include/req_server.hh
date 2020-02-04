@@ -148,7 +148,7 @@ public:
             args->SetInternalFieldCount(1);
             // Set C++ binding for getting args.
             args->SetHandler(IndexedPropertyHandlerConfiguration(get_args, set_args));
-            args->SetAccessor(String::NewFromUtf8(isolate, "result"), get_result, set_result);
+            args->SetAccessor(String::NewFromUtf8(isolate, "result").ToLocalChecked(), get_result, set_result);
             args_templ.Reset(isolate, args);
  
             // Setup the JS contexts for every tenant..
@@ -175,12 +175,6 @@ public:
                     v8::FunctionTemplate::New(isolate, js_print)
                 );
 
-                global->Set(
-                    v8::String::NewFromUtf8(isolate, "Init_Iterator", v8::NewStringType::kNormal)
-                        .ToLocalChecked(),
-                    v8::FunctionTemplate::New(isolate, init_iterator)
-                );
-                
                 global->Set(
                     v8::String::NewFromUtf8(isolate, "Next", v8::NewStringType::kNormal)
                         .ToLocalChecked(),
@@ -212,7 +206,7 @@ public:
                 Local<ObjectTemplate> templ =
                     Local<ObjectTemplate>::New(isolate, args_templ);
              
-                Local<Object> obj = templ->NewInstance();
+                Local<Object> obj = templ->NewInstance(c).ToLocalChecked();
 
                 // Bind rargs to global JS variable "args".
                 obj->SetInternalField(0, External::New(isolate, &rargs));
@@ -268,8 +262,8 @@ void get_args(unsigned int index,
     info.GetReturnValue().Set(
         String::NewFromUtf8(local_req_server().isolate,
                             value.c_str(),
-                            String::kNormalString,
-                            (int)value.length())
+                            NewStringType::kNormal,
+                            (int)value.length()).ToLocalChecked()
     );
 }
 
@@ -295,6 +289,6 @@ void set_result(Local<String> property, Local<Value> value,
     Local<Object> self = info.Holder();
     Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
     void* ptr = wrap->Value();
-    String::Utf8Value str(value);
+    String::Utf8Value str(info.GetIsolate(), value);
     static_cast<req_args*>(ptr)->result = to_sstring(ToCString(str));
 }

@@ -52,8 +52,8 @@ int main(int argc, char** argv) {
       std::move(tracing));
     v8::V8::InitializePlatform(_platform.get());
 */
-    Platform* platform = platform::CreateDefaultPlatform();
-    V8::InitializePlatform(platform);
+    std::unique_ptr<Platform> platform = platform::NewDefaultPlatform();
+    V8::InitializePlatform(platform.get());
     V8::Initialize();
 
     int c = 2;
@@ -91,6 +91,6 @@ int main(int argc, char** argv) {
     });
     V8::Dispose();
     V8::ShutdownPlatform();
-    delete platform;
+    delete platform.get();
     //_platform.reset();
 }

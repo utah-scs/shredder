@@ -55,9 +55,7 @@
 #include "v8/include/libplatform/libplatform.h"
 #include "v8/include/v8.h"
 #include "v8/include/v8.h"
-#include "v8/src/flags.h"
-#include "btree/btree_map.h"
-#include "btree/safe_btree_map.h"
+#include "v8/src/flags/flags.h"
 #include <unistd.h>
 #include <boost/intrusive/unordered_set.hpp>
 #include <boost/intrusive/list.hpp>

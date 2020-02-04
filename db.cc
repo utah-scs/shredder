@@ -16,34 +16,6 @@ typedef std::mutex Mutex;
 typedef std::lock_guard<mutex> Lock;
 Mutex dump_mutex{};
 
-void
-database::dump_stats()
-{
-    ts now = std::chrono::high_resolution_clock::now();
-    ns interval_ns = now - last_dump;
-    if (interval_ns.count() < 1e9)
-        return;
-
-    ns total_ns = now - first_dump;
-
-    // Update all once-per-interval stats.
-    stats.time = total_ns;
-    stats.map_size = obj_map[0].size();
-
-    shard_id id{engine().cpu_id()};
-
-    auto diff = stats - prev_stats;
-
-    {
-      Lock _{dump_mutex};
-      stats.dump(id, ">");
-      diff.dump(id, "-");
-    }
-
-    prev_stats = stats;
-    last_dump = now;
-}
-
 future<> database::start() {
     for (int i = 0; i < NUM_CONTEXTS; i++)
         ht[i].table = NULL;
@@ -56,7 +28,6 @@ future<> database::stop() {
 
 // Set value on all cores
 future<> database::set_all(redis_key rk, db_val val) {
-//    obj_map[0].insert(std::make_pair(rk.key(), val));
     return make_ready_future<>();
 }
 
@@ -101,7 +72,6 @@ future<scattered_message_ptr> database::get(const redis_key& key, int tid) {
 // TO DO: not implemented for hash table delete
 bool database::del(const redis_key& rk)
 {
-    obj_map[0].erase(rk.key());
     return 0;
 }
 
@@ -110,7 +80,6 @@ future<foreign_ptr<lw_shared_ptr<db_val>>>
 database::get_direct(uint32_t key, int tid)
 {
     stats.gets++;
-//    dump_stats();
     using return_type = foreign_ptr<lw_shared_ptr<db_val>>;
     db_val* val = ht_get(&ht[tid], key);
     if (!val) {
@@ -140,7 +109,6 @@ future<foreign_ptr<lw_shared_ptr<sstring>>>
 database::del_direct(const redis_key& rk, int tid)
 {
     using return_type = foreign_ptr<lw_shared_ptr<sstring>>;
-    obj_map[tid].erase(rk.key());
     const sstring v = "ok\n";
     return make_ready_future<return_type>(
         foreign_ptr<lw_shared_ptr<sstring>>(make_lw_shared<sstring>(v)));
@@ -158,27 +126,4 @@ database::get_table(int tid)
 db_val** database::get_table_direct(int tid)
 {
     return ht[tid].table;
-}
-// Obsolete code for btree version, not needed for hash table version
-future<foreign_ptr<lw_shared_ptr<db_val>>>
-database::get_iterator(const redis_key& rk, int tid)
-{
-    using return_type = foreign_ptr<lw_shared_ptr<db_val>>;
-    it[tid] = obj_map[tid].find(rk.key());
-    db_val val;
-    if (it[tid] != obj_map[tid].end()) val = it[tid]->second;
-    return make_ready_future<return_type>(
-        foreign_ptr<lw_shared_ptr<db_val>>(make_lw_shared<db_val>(val)));
-}
-
-// Obsolete code for btree version, not needed for hash table version
-future<foreign_ptr<lw_shared_ptr<db_val>>>
-database::get_next(int tid)
-{
-    using return_type = foreign_ptr<lw_shared_ptr<db_val>>;
-    db_val val;
-    if (it[tid] != obj_map[tid].end()) val = it[tid]->second;
-    ++(it[tid]);
-    return make_ready_future<return_type>(
-        foreign_ptr<lw_shared_ptr<db_val>>(make_lw_shared<db_val>(val)));
 }

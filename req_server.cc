@@ -67,7 +67,6 @@ inline uint32_t get_hash(uint32_t key, uint32_t seed) {
 // C++ version of get()
 future<> req_service::get(args_collection& args, output_stream<char>& out) {
     count++;
-    auto start = rdtsc();
 /*    auto now = rdtsc();
     if (count == 10000) {
         count = 0;
@@ -118,11 +117,6 @@ future<> req_service::get(args_collection& args, output_stream<char>& out) {
 //    auto result = reply_builder::build_direct(v, v.size());
     /*auto current = this->rdtsc();
     req_t += (current - now);*/
-
-    auto end = rdtsc();
-    if (engine().cpu_id() == 0) 
-        cout <<(end - start) << "\n";
-
 
     out.write(str, val->length);
     //return out.write(std::move(result));
@@ -324,11 +318,10 @@ future<> req_service::js_req(args_collection& args, output_stream<char>& out, in
 //printf("%s \n", cstr);
              /*auto current = this->rdtsc();
              req_t += (current - now);*/
-             auto end = rdtsc();
-             if (engine().cpu_id() == 0) 
-                 cout <<(end - start) << "\n";
+	     auto res = reply_builder::build_direct(tmp, tmp.size());
 
-             out.write(cstr, strlen(cstr));
+             out.write(std::move(res));
+             //out.write(cstr, strlen(cstr));
          }
          //out.write("^", 1);
          //tmp = rargs.result;

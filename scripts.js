@@ -27,6 +27,8 @@ function setup() {
     for (var j = 0; j < fieldsPerRow; ++j) {
       //bufView.setUint32(j*fieldSize, Math.floor(Math.random() * 671000));
       bufView[j] = Math.floor(Math.random() * 262142);
+      if (i === 0 && j === 0)
+	    print(bufView[j]);
     }
 
 //    var bufView = new Uint8Array(buf);
@@ -125,32 +127,32 @@ function predict() {
 }
 
 // C++ binding version
-function get(key) {
+/*function get(key) {
   var k = key;
   for (var i = 0; i < 1; i++) {
     var p = DBGet(k%(nRows - 1));
     var dv = new Uint32Array(p);
     var k = dv[0]%(nRows - 1);
   }
-//  return k;
-    return p;
+  return k;
 }
-
+*/
 var getBuf = new ArrayBuffer(recordSize);
 // CSA version
-/*function get(key) {
+function get(key) {
   var k = key;
 //  var p = HTGet(table, key%(nRows - 1), getBuf);
   for (var i = 0; i < 1; i++) {
     var p = HTGet(table, k%(nRows - 1), getBuf);
     var dv = new Uint32Array(getBuf);
     k = dv[0];
+    print(dv[0]);
     //var k = HTGetField(getBuf, 0)%(nRows - 1);
   }
-//  return k;
-  return getBuf;
+  return k;
+//  return getBuf;
 }
-*/
+
 var c= 0;
 /*function get_friend_list(key, depth) {
      var k = key;
@@ -202,7 +204,7 @@ function get_friend_list(key, depth) {
 var buf;
 var bufView
 
-function set() {
+function set(k, v) {
     buf = new ArrayBuffer(recordSize);
     // Uint32Array and Dataview have different endian.
     //var bufView = new Uint32Array(buf);

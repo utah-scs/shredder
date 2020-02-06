@@ -65,7 +65,7 @@
 //#include "include/net_server.hh"
 
 // The number of JS contexts, there should be one context for each tenant.
-#define NUM_CONTEXTS 64
+#define NUM_CONTEXTS 1
 
 using namespace seastar;
 

@@ -17,9 +17,9 @@ function setup() {
   if (setup_done === 1)
     return;
 // Load Facebook social graph.
-//LoadFBGraph();
+LoadFBGraph();
 // Uint32Array
-  for (var i = 0; i < nRows; ++i) {
+/*  for (var i = 0; i < nRows; ++i) {
     var buf = new ArrayBuffer(recordSize);
     // Uint32Array and Dataview have different endian.
     //var bufView = new DataView(buf);
@@ -27,8 +27,6 @@ function setup() {
     for (var j = 0; j < fieldsPerRow; ++j) {
       //bufView.setUint32(j*fieldSize, Math.floor(Math.random() * 671000));
       bufView[j] = Math.floor(Math.random() * 262142);
-      if (i === 0 && j === 0)
-	    print(bufView[j]);
     }
 
 //    var bufView = new Uint8Array(buf);
@@ -36,9 +34,10 @@ function setup() {
 //      bufView[j] = 41;
 //    }
 
+print("setup done");
     DBSet(i, buf);
   }
-
+*/
 
 // Init neural network
   //for (var i = 0; i < 11; ++i) {
@@ -65,9 +64,9 @@ function setup() {
 //  DBSet(1, input_buf);
  
 print("setup done");
-  args.result = "+OK\r\n";
   table = GetHashTable();
   setup_done = 1;
+  return "+OK\r\n";
 }
 
 //var input = [0.1666666666666668, 0.41666666666666663, 0.06779661016949151, 0.04166666666666667];

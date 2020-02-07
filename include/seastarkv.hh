@@ -62,7 +62,6 @@
 #include <boost/intrusive_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
-//#include "include/net_server.hh"
 
 // The number of JS contexts, there should be one context for each tenant.
 #define NUM_CONTEXTS 1

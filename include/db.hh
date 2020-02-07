@@ -21,7 +21,6 @@ struct db_val {
     uint32_t key;
     struct db_val *next;
     void* data;
-    void* list;
     uint32_t length;
 }__attribute__((__packed__));
 

@@ -47,12 +47,10 @@ function setup() {
 */
 
   var buf = nn.buffer;
-
-  var buf = new ArrayBuffer(352);
   DBSet(10000, buf);
 
   // Input for neural inference (Wine dataset)
-  var input = new Float32Array([0.08131241084165478, 0.5263157894736841, 0.031620553359683806, 0.18716577540106946, 0.2783505154639176, 0.17391304347826086, 0.33448275862068966, 0.3565400843881856, 0.2075471698113207, 0.3312302839116719, 0.28327645051194533, 0.5772357723577236, 0.4432234432234432]);
+  var input = new Float32Array([0.4008559201141227, 0.5631578947368422, 0.36561264822134387, 0.5401069518716578, 0.48453608247422686, 0.5434782608695652, 0.23103448275862068, 0.07172995780590717, 0.7547169811320755, 0.3312302839116719, 0.6843003412969284, 0.0975609756097561, 0.12820512820512825]);
 
   // Input for neural inference (Iris dataset)
   // var input = new Float32Array([0.1666666666666668, 0.41666666666666663, 0.06779661016949151, 0.04166666666666667]);
@@ -84,10 +82,9 @@ var nnInput = new ArrayBuffer(num_inputs*4);
 */
 
 function predict() {
-    var p = HTGet(table, 0, nnBuf);
+    var p = HTGet(table, 10000, nnBuf);
     var dv = new Float32Array(nnBuf);
-
-    var x = HTGet(table, 1, nnInput);
+    var x = HTGet(table, 10001, nnInput);
     var input = new Float32Array(nnInput);
 
     var old_input = input;
@@ -131,17 +128,13 @@ var getBuf = new ArrayBuffer(recordSize);
 function get(key) {
   var length = HTGet(table, key%(nRows - 1), getBuf);
   var dv = new Uint32Array(getBuf);
-//  v = dv[0];
-  print(length)
   return dv;
-//  return getBuf;
 }
 
-var c= 0;
-/*function get_friend_list(key, depth) {
+// C++ binding version of count_friend_list
+/*function count_friend_list(key, depth) {
      var k = key;
      var p = DBGet(k);
-//c = c + 1;
      var l = p.byteLength/4;
      if (l == 0)
          return 0; 
@@ -152,23 +145,21 @@ var c= 0;
      var dv = new Uint32Array(p);
      for (var i = 0; i < l; i++) {
          k = dv[i];
-         sum = sum + get_friend_list(k, depth - 1);
+         sum = sum + count_friend_list(k, depth - 1);
      }
-//print(c);
     return sum;
 }*/
 
+// CSA version of count_friend_list
 var tmpBuf = new ArrayBuffer(8000);
-function get_friend_list(key, depth) {
+function count_friend_list(key, depth) {
     var k = key;
     if (depth == 1) {
         var l = HTGet(table, k, tmpBuf);
-//print(c);
     } else {
         var friendBuf = new ArrayBuffer(0);
         var l = HTGet(table, k, friendBuf);
     }
-//c = c + 1;
     if (l === undefined) {
         return 0;
     }
@@ -179,26 +170,7 @@ function get_friend_list(key, depth) {
        
     for (var i = 0; i < l/4; i++) {
         k = HTGetField(friendBuf, i);
-        //k = dv[i];
-        sum = sum + get_friend_list(k, depth - 1);
+        sum = sum + count_friend_list(k, depth - 1);
     }
     return sum;
 }
-
-var buf;
-var bufView
-
-function set(k, v) {
-    buf = new ArrayBuffer(recordSize);
-    // Uint32Array and Dataview have different endian.
-    //var bufView = new Uint32Array(buf);
-    bufView = new DataView(buf);
-    for (var j = 0; j < fieldsPerRow; ++j) {
-      //bufView[j] = Math.floor(Math.random() * 100);
-      bufView.setUint32(j*fieldSize, 100);
-    }
-
-    DBSet(k, buf);
-    return "+OK\r\n";
-}
-

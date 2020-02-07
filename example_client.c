@@ -41,6 +41,15 @@ int main(int argc, char **argv) {
     printf("JS setup: %s\n", reply->str);
     freeReplyObject(reply);
 
+    reply = redisCommand(c,"JS %s %s", "get", "0");
+    printf("JS get 0: %s\n", reply->str);
+    freeReplyObject(reply);
+
+    reply = redisCommand(c,"JS %s", "predict");
+    printf("JS predict: %s\n", reply->str);
+    freeReplyObject(reply);
+
+
     /* Disconnects and frees the context */
     redisFree(c);
 

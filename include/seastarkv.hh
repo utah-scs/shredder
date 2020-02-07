@@ -64,7 +64,7 @@
 #include <boost/optional.hpp>
 
 // The number of JS contexts, there should be one context for each tenant.
-#define NUM_CONTEXTS 1
+#define NUM_CONTEXTS 64
 
 using namespace seastar;
 

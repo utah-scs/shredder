@@ -7,15 +7,6 @@ using namespace std;
 
 distributed<database> db;
 
-// TODO(stutsman): This is gross, but the dumps synchronize badly enough to
-// screwup output to the log file. We should do something simple that doesn't
-// suffer from contention like this.
-// Also: seastar seems to have a spinlock in the upstream documentation, but
-// I couldn't find it in our current source tree.
-typedef std::mutex Mutex;
-typedef std::lock_guard<mutex> Lock;
-Mutex dump_mutex{};
-
 future<> database::start() {
     for (int i = 0; i < NUM_CONTEXTS; i++)
         ht[i].table = NULL;
@@ -79,7 +70,6 @@ bool database::del(const redis_key& rk)
 future<foreign_ptr<lw_shared_ptr<db_val>>>
 database::get_direct(uint32_t key, int tid)
 {
-    stats.gets++;
     using return_type = foreign_ptr<lw_shared_ptr<db_val>>;
     db_val* val = ht_get(&ht[tid], key);
     if (!val) {

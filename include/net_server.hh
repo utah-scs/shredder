@@ -37,8 +37,6 @@ private:
         }
     };
 
-    //stats _stats;
-    //request_latency_tracer _latency_tracer;
     seastar::gate _request_gate;
 
 public:

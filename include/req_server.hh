@@ -9,22 +9,6 @@ using namespace redis;
 using namespace seastar;
 using namespace v8;
 
-struct req_args;
-static const char* ToCString(const v8::String::Utf8Value& value) {
-    return *value ? *value : "<string conversion failed>";
-}
-
-static void get_args(unsigned int index,
-               const PropertyCallbackInfo<Value>& info);
-static void set_args(unsigned int index, Local<Value> value,
-               const PropertyCallbackInfo<Value>& info);
-
-static void get_result(Local<String> property,
-               const PropertyCallbackInfo<Value>& info);
-
-static void set_result(Local<String> property, Local<Value> value,
-               const PropertyCallbackInfo<void>& info);
-
 class req_service;
 extern distributed<req_service> req_server;
 inline distributed<req_service>& get_req_server() {
@@ -49,12 +33,6 @@ void init_iterator(const v8::FunctionCallbackInfo<v8::Value>& args);
 void iterator_next(const v8::FunctionCallbackInfo<v8::Value>& args);
 void get_hash_table(const v8::FunctionCallbackInfo<v8::Value>& args);
 void load_fb_graph(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-// Args for JS function
-struct req_args {
-    sstring args[10];
-    sstring result;
-};
 
 using message = scattered_message<char>;
 class req_service {
@@ -129,7 +107,6 @@ private:
 public:
     int current_tid;
     Isolate* isolate;
-    req_args rargs;
     uint64_t start_t;
     uint64_t req_t;
     uint64_t count;
@@ -143,14 +120,7 @@ public:
         Isolate::Scope isolate_scope(isolate);
         {
             HandleScope handle_scope(isolate);
-            Local<ObjectTemplate> args = ObjectTemplate::New(isolate);
            
-            args->SetInternalFieldCount(1);
-            // Set C++ binding for getting args.
-            args->SetHandler(IndexedPropertyHandlerConfiguration(get_args, set_args));
-            args->SetAccessor(String::NewFromUtf8(isolate, "result").ToLocalChecked(), get_result, set_result);
-            args_templ.Reset(isolate, args);
- 
             // Setup the JS contexts for every tenant..
             for (int i = 0; i < NUM_CONTEXTS; i++) {
                 v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
@@ -201,22 +171,7 @@ public:
                 );
 
                 Local<Context> c = Context::New(isolate, NULL, global);
-             
                 Context::Scope contextScope(c);
-                Local<ObjectTemplate> templ =
-                    Local<ObjectTemplate>::New(isolate, args_templ);
-             
-                Local<Object> obj = templ->NewInstance(c).ToLocalChecked();
-
-                // Bind rargs to global JS variable "args".
-                obj->SetInternalField(0, External::New(isolate, &rargs));
-                c->Global()
-                    ->Set(c,
-                          String::NewFromUtf8(isolate, "args", NewStringType::kNormal)
-                              .ToLocalChecked(),
-                          obj)
-                    .FromJust();
-             
                 contexts[i].Reset(isolate, c);
             }
 
@@ -252,43 +207,3 @@ public:
     future<int> get_tid(void);
     int get_tid_direct(void);
 };
-
-void get_args(unsigned int index,
-              const PropertyCallbackInfo<Value>& info) {
-    Local<Object> self = info.Holder();
-    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-    void* ptr = wrap->Value();
-    sstring& value = static_cast<req_args*>(ptr)->args[index];
-    info.GetReturnValue().Set(
-        String::NewFromUtf8(local_req_server().isolate,
-                            value.c_str(),
-                            NewStringType::kNormal,
-                            (int)value.length()).ToLocalChecked()
-    );
-}
-
-void set_args(unsigned int index, Local<Value> value,
-               const PropertyCallbackInfo<Value>& info) {
-}
-
-void get_result(Local<String> property,
-               const PropertyCallbackInfo<Value>& info) {
-    Local<Object> self = info.Holder();
-    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-    void* ptr = wrap->Value();
-    sstring& value = static_cast<req_args*>(ptr)->result;
- 
-    Local<v8::ArrayBuffer> ab = ArrayBuffer::New(local_req_server().isolate, 4);
-    uint32_t* tmp = (uint32_t*)ab->GetContents().Data();
-    *tmp = 42;
-    info.GetReturnValue().Set(ab);
-}
-
-void set_result(Local<String> property, Local<Value> value,
-               const PropertyCallbackInfo<void>& info) {
-    Local<Object> self = info.Holder();
-    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-    void* ptr = wrap->Value();
-    String::Utf8Value str(info.GetIsolate(), value);
-    static_cast<req_args*>(ptr)->result = to_sstring(ToCString(str));
-}

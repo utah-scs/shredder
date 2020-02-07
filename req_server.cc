@@ -18,6 +18,10 @@ using namespace std::chrono;
 
 distributed<req_service> req_server;
 
+static const char* ToCString(const v8::String::Utf8Value& value) {
+    return *value ? *value : "<string conversion failed>";
+}
+
 future<> req_service::start() {
     return make_ready_future<>();
 }
@@ -254,9 +258,6 @@ future<> req_service::js_req(args_collection& args, output_stream<char>& out, in
         //return make_ready_future<sstring>(to_sstring("ok\n"));
     }
  */
-    for (unsigned int i = 0; i < req->args._command_args_count -1; i++) {
-        rargs.args[i] = req->args._command_args[i+1];
-    }
 
     Local<Function> process_fun;
     if (prev_fun_name[current_tid] != name) {

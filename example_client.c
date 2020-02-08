@@ -36,19 +36,22 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    /* Setup test data */
+    // Run JavaScript function 'setup' to setup test data, 
+    // including Facebook social graphs and neural network model. 
     reply = redisCommand(c,"JS %s", "setup");
     printf("JS setup: %s\n", reply->str);
     freeReplyObject(reply);
 
+    // Run JavaScript function 'get' to read value of key 0,
+    // which is the friend list of user id 0 in Facebook socail graph
     reply = redisCommand(c,"JS %s %s", "get", "0");
     printf("JS get 0: %s\n", reply->str);
     freeReplyObject(reply);
 
+    // Run JavaScript neural predict function, the result should be 1
     reply = redisCommand(c,"JS %s", "predict");
     printf("JS predict: %s\n", reply->str);
     freeReplyObject(reply);
-
 
     /* Disconnects and frees the context */
     redisFree(c);

@@ -41,6 +41,7 @@ future<> connection_handler::handle(input_stream<char>& in, output_stream<char>&
                     {
                         return local_req_server().get(std::move(std::ref(_request_args)), std::ref(out));
                     }
+		    // Shredder adds JS command to run JavaScript functions
                     case redis_protocol_parser::command::js:
                          return local_req_server().js_req(std::move(std::ref(_request_args)), std::ref(out), tid);
                     case redis_protocol_parser::command::info:

@@ -67,10 +67,6 @@ private:
         ~rqst(){}
     };
    
-    // The queue to put incoming requests in, the JS thread will take and
-    //  run requests from the queue.
-    std::queue<lw_shared_ptr<rqst>> req_q;
-
     MaybeLocal<String> read_file(Isolate* isolate, const string& name) {
         FILE* file = fopen(name.c_str(), "rb");
         if (file == NULL) return MaybeLocal<String>();
@@ -95,21 +91,9 @@ private:
         return result;
     }
 
-    uint64_t rdtsc() {
-        uint32_t lo, hi;
-        __asm volatile
-        (
-            "rdtsc" : "=a" (lo), "=d" (hi)
-        );
-        return (uint64_t)hi<<32|lo;
-    }
-
 public:
     int current_tid;
     Isolate* isolate;
-    uint64_t start_t;
-    uint64_t req_t;
-    uint64_t count;
 
     req_service(char** a)
         : argv(a)
@@ -124,6 +108,7 @@ public:
             // Setup the JS contexts for every tenant..
             for (int i = 0; i < NUM_CONTEXTS; i++) {
                 v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
+		// Set C++ bindings
                 global->Set(
                     v8::String::NewFromUtf8(isolate, "DBGet", v8::NewStringType::kNormal)
                         .ToLocalChecked(),
@@ -144,14 +129,12 @@ public:
                         .ToLocalChecked(),
                     v8::FunctionTemplate::New(isolate, js_print)
                 );
-
                 global->Set(
                     v8::String::NewFromUtf8(isolate, "GetHashTable", v8::NewStringType::kNormal)
                         .ToLocalChecked(),
                     v8::FunctionTemplate::New(isolate, get_hash_table)
                 );
-
-                 global->Set(
+                global->Set(
                     v8::String::NewFromUtf8(isolate, "LoadFBGraph", v8::NewStringType::kNormal)
                         .ToLocalChecked(),
                     v8::FunctionTemplate::New(isolate, load_fb_graph)

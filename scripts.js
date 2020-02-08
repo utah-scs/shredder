@@ -49,7 +49,7 @@ function setup() {
   var buf = nn.buffer;
   DBSet(10000, buf);
 
-  // Input for neural inference (Wine dataset)
+  // One normalized input for neural inference (Wine dataset)
   var input = new Float32Array([0.4008559201141227, 0.5631578947368422, 0.36561264822134387, 0.5401069518716578, 0.48453608247422686, 0.5434782608695652, 0.23103448275862068, 0.07172995780590717, 0.7547169811320755, 0.3312302839116719, 0.6843003412969284, 0.0975609756097561, 0.12820512820512825]);
 
   // Input for neural inference (Iris dataset)

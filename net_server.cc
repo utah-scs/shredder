@@ -12,7 +12,10 @@ void network_server::start() {
      keep_doing([this] {
         return _listener->accept().then([this] (connected_socket fd, socket_address addr) mutable {
             return seastar::async([this, &fd, addr] {
-                // The tenant id for this connection
+                // The tenant id for this connection. 
+		// This is a hacky implementation for evaluating overhead of V8 context switches.
+		// Assign a new tenant id for each new coming connection.
+		// Not a complete implementation for tenant support.
                 int t = (this->tid++)%NUM_CONTEXTS;
 
                 auto conn = make_lw_shared<connection>(std::move(fd), addr, t);

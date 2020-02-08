@@ -97,7 +97,7 @@ int req_service::get_tid_direct(void) {
     return current_tid;
 }
 
-// Put a request into the queue and signal the JS thread
+// Run JavaScript function
 future<> req_service::js_req(args_collection& args, output_stream<char>& out, int tid) {
     v8::Locker locker{isolate};              
     Isolate::Scope isolate_scope(isolate);
@@ -105,6 +105,7 @@ future<> req_service::js_req(args_collection& args, output_stream<char>& out, in
 
     current_tid = tid;
     
+    // Switch to V8 context of this tenant
     Local<Context> context = Local<Context>::New(isolate, contexts[current_tid]);
     Context::Scope context_scope(context);
     current_context = &context;
@@ -149,12 +150,14 @@ future<> req_service::js_req(args_collection& args, output_stream<char>& out, in
          out.write(cstr, strlen(cstr));
     } else {
          if (result->IsArrayBuffer()) {
+             // Return raw data
              auto res = Local<ArrayBuffer>::Cast(result);
              auto cont = res->GetContents();
              auto cstr = (char*)cont.Data();
              auto end = rdtsc();
              out.write(cstr, cont.ByteLength());
          } else {
+	     // Return data in Redis protocol
              v8::String::Utf8Value str(isolate, result);
              tmp = to_sstring(ToCString(str));
              auto cstr = ToCString(str);
@@ -190,16 +193,13 @@ future<> req_service::js() {
 
         while (true) {
             HandleScope handle_scope(isolate);
-
             sem.wait(1).get();
-            auto req = req_q.front();
-            req_q.pop();
-
         }
     });
     return make_ready_future<>();
 }
 
+// C++ binding for JS functions to get data from hashtable
 void db_get(const v8::FunctionCallbackInfo<v8::Value>& args) {
     db_val ret;
     db_val* ret_p = &ret;
@@ -217,6 +217,8 @@ void db_get(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
     args.GetReturnValue().Set(ab);
 }
+
+// C++ binding for JS functions to set data to hashtable
 void db_set(const v8::FunctionCallbackInfo<v8::Value>& args) {
     auto content = args[1].As<v8::ArrayBuffer>()->Externalize();
     db_val* val = (db_val*)malloc(sizeof(db_val));
@@ -254,6 +256,7 @@ void db_del(const v8::FunctionCallbackInfo<v8::Value>& args) {
     }).get();
 }
 
+// C++ binding for JS functions to print messages
 void js_print(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate * isolate = args.GetIsolate();
     HandleScope handle_scope(isolate);
@@ -263,6 +266,7 @@ void js_print(const v8::FunctionCallbackInfo<v8::Value>& args) {
     std::cout << cstr << '\n';
 }
 
+// C++ binding for JS functions to get hashtable
 void get_hash_table(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate * isolate = args.GetIsolate();
     HandleScope handle_scope(isolate);
@@ -273,7 +277,7 @@ void get_hash_table(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(ab);
 }
 
-//Load SNAP ego network into hashtable
+//C++ binding to load SNAP ego network into hashtable
 void load_fb_graph(const v8::FunctionCallbackInfo<v8::Value>& args) {
     string line;
     ifstream fb_file("facebook_combined.txt");

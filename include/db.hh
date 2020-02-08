@@ -114,5 +114,6 @@ public:
 
     future<> start();
     future<> stop();
+    // One hashtable for each V8 context
     hashtable_t ht[NUM_CONTEXTS];
 };

@@ -17,7 +17,6 @@ future<> database::stop() {
     return make_ready_future<>();
 }
 
-// C++ binding for getting value from database
 future<foreign_ptr<lw_shared_ptr<db_val>>>
 database::get_direct(uint32_t key, int tid)
 {
@@ -31,7 +30,6 @@ database::get_direct(uint32_t key, int tid)
         foreign_ptr<lw_shared_ptr<db_val>>(make_lw_shared<db_val>(*val)));
 }
 
-// C++ binding for setting key value
 future<foreign_ptr<lw_shared_ptr<sstring>>>
 database::set_direct(uint32_t key, db_val* val, int tid)
 {

@@ -8,7 +8,7 @@ To run Shredder:
 1. Run ./shredder & in background.
 2. example_client.c is an example Shredder client implementation. 
    Shredder uses Redis protocol, so Redis client library such as hredis can be used to communicate with Shredder server.
-   Shredder adds a new command "JS" to run JavaScript functions. Example JS functions can be found in "script.js", including a dataset setup function, a simple key value query function and a neural model predict function.
+   Shredder adds a new command "JS" to run JavaScript functions. Example JS functions can be found in "script.js", including a dataset setup function, a simple key value query function, a graph traversal function and a neural model predict function.
 
 For DPDK, please follow instructions in seastar/dpdk to setup DPDK
 

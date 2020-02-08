@@ -154,7 +154,6 @@ future<> req_service::js_req(args_collection& args, output_stream<char>& out, in
              auto res = Local<ArrayBuffer>::Cast(result);
              auto cont = res->GetContents();
              auto cstr = (char*)cont.Data();
-             auto end = rdtsc();
              out.write(cstr, cont.ByteLength());
          } else {
 	     // Return data in Redis protocol

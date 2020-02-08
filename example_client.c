@@ -48,6 +48,13 @@ int main(int argc, char **argv) {
     printf("JS get 0: %s\n", reply->str);
     freeReplyObject(reply);
 
+    // count_friend_list is a graph traversal function which counts a user's
+    // friends and friends's friends and so on. The first parameter is the 
+    // user ID and the second is the depth of the traversal.
+    reply = redisCommand(c,"JS %s %s %s", "count_friend_list", "0", "1");
+    printf("JS count_friend_list 0 1: %s\n", reply->str);
+    freeReplyObject(reply);
+
     // Run JavaScript neural predict function, the result should be 1
     reply = redisCommand(c,"JS %s", "predict");
     printf("JS predict: %s\n", reply->str);

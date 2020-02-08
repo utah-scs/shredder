@@ -17,55 +17,6 @@ future<> database::stop() {
     return make_ready_future<>();
 }
 
-// Set value on all cores
-future<> database::set_all(redis_key rk, db_val val) {
-    return make_ready_future<>();
-}
-
-// C++ version of set()
-// TO DO: currently it just set all fields to 1, need to fix this 
-future<scattered_message_ptr> database::set(const redis_key& rk, sstring& val) {
-    db_val* v = ht_get(&ht[0], atoi(rk.key().c_str()));
-    v->data = malloc(128);
-    uint32_t* data = (uint32_t*)(v->data);
-    for (int i = 0; i < 32; i++)
-        data[i] = 1;
-
-    return reply_builder::build(msg_ok);
-}
-
-// C++ version of get()
-// TO DO: currently just read the first field, need to be able to specify which field to read.
-future<scattered_message_ptr> database::get(const redis_key& key, int tid) {
-    uint32_t* data;
-
-    auto k = atoi(key.key().c_str());
-//    for (int i = 0; i < 2048; i++) {
-    db_val* v = ht_get(&ht[tid], k);
-    if (!v) {
-        sstring val = to_sstring(-1);
-        return reply_builder::build(val, val.size());
-    }
-    data = (uint32_t*)(v->data);
-    sstring val;
-/*    for (unsigned i = 0; i < v->length; i++) {
-        auto tmp = to_sstring(*data);
-        val.append(tmp.c_str(), tmp.size());
-        data++;
-    }*/
-//    k = (k + 1)%(671000-1);
-//    }
-    val = to_sstring(*data);
-
-    return reply_builder::build(val, val.size());
-}
-
-// TO DO: not implemented for hash table delete
-bool database::del(const redis_key& rk)
-{
-    return 0;
-}
-
 // C++ binding for getting value from database
 future<foreign_ptr<lw_shared_ptr<db_val>>>
 database::get_direct(uint32_t key, int tid)

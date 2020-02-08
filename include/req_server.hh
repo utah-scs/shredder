@@ -146,12 +146,6 @@ public:
                 );
 
                 global->Set(
-                    v8::String::NewFromUtf8(isolate, "Next", v8::NewStringType::kNormal)
-                        .ToLocalChecked(),
-                    v8::FunctionTemplate::New(isolate, iterator_next)
-                );
-                
-                global->Set(
                     v8::String::NewFromUtf8(isolate, "GetHashTable", v8::NewStringType::kNormal)
                         .ToLocalChecked(),
                     v8::FunctionTemplate::New(isolate, get_hash_table)

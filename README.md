@@ -6,12 +6,12 @@ To compile Shredder:
 3. Run make
 
 To run Shredder:
-1. Run ./shredder & in background.
+1. Run ./shredder & in background. Use -c to run Shredder on multiple cores, for example "./shredder -c2" runs Shredder on 2 cores.
 2. example_client.c is an example Shredder client implementation. 
    Shredder uses Redis protocol, so Redis client library such as hredis can be used to communicate with Shredder server.
    Shredder adds a new command "JS" to run JavaScript functions. Example JS functions can be found in "script.js", including a dataset setup function, a simple key value query function, a graph traversal function and a neural model predict function.
 
-For DPDK, please follow instructions in seastar/dpdk to setup DPDK
+For DPDK, please follow instructions in seastar/dpdk to setup DPDK. To run Shredder with DPDK, run "sudo ./shredder --network-stack native --dpdk-pmd".
 
 # Caveats
 
